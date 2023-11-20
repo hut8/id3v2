@@ -110,7 +110,6 @@ func encodedSize(src string, enc Encoding) int {
 	encodeWriteText(bw, src, enc)
 
 	return bw.Written()
-
 }
 
 // decodeText decodes src from "from" encoding to UTF-8.
@@ -158,10 +157,6 @@ func encodeWriteText(bw *bufWriter, src string, to Encoding) error {
 	}
 
 	bw.WriteString(encoded)
-
-	if to.Equals(EncodingUTF16) && !bytes.HasSuffix([]byte(encoded), []byte{0}) {
-		bw.WriteByte(0)
-	}
 
 	return nil
 }
