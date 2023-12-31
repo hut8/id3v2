@@ -2,7 +2,7 @@ package id3v2
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 
 	xencoding "golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/charmap"
@@ -86,9 +86,9 @@ var (
 	xencodingUTF8       = newXEncodingWrapper(unicode.UTF8)
 )
 
-// bom is used in UTF-16 encoded Unicode with BOM.
+// bomLE is used in UTF-16 encoded Unicode with BOM.
 // See https://en.wikipedia.org/wiki/Byte_order_mark.
-var bom = []byte{0xFF, 0xFE}
+var bomLE = []byte{0xFF, 0xFE}
 
 // getEncoding returns Encoding in accordance with ID3v2 key.
 func getEncoding(key byte) Encoding {
@@ -104,7 +104,7 @@ func encodedSize(src string, enc Encoding) int {
 		return len(src)
 	}
 
-	bw := getBufWriter(ioutil.Discard)
+	bw := getBufWriter(io.Discard)
 	defer putBufWriter(bw)
 
 	encodeWriteText(bw, src, enc)
@@ -121,7 +121,7 @@ func decodeText(src []byte, from Encoding) string {
 	}
 
 	// If src is just BOM, then it's an empty string.
-	if from.Equals(EncodingUTF16) && bytes.Equal(src, bom) {
+	if from.Equals(EncodingUTF16) && bytes.Equal(src, bomLE) {
 		return ""
 	}
 
@@ -166,7 +166,7 @@ func resolveXEncoding(src []byte, encoding Encoding) xencodingWrapper {
 	case 0:
 		return xencodingISO
 	case 1:
-		if len(src) > 2 && bytes.Equal(src[:2], bom) {
+		if len(src) > 2 && bytes.Equal(src[:2], bomLE) {
 			return xencodingUTF16LEBOM
 		}
 		return xencodingUTF16BEBOM
